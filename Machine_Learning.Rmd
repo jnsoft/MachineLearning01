@@ -46,7 +46,7 @@ data <- data[,not_usefull]
 ```
 Divide data into train and cross validation subsets. I sample 4000 rows to train with which would be enough to get the out of sample accuracy to over 0.95. If I hade more time and computer power, I would have used the whole traing set:
 ```{r}
-set.seed(8423)
+set.seed(24355474)
 data <- randomRows(data,4000)
 inTrain <- createDataPartition(y=data$classe, p=0.7, list=FALSE)
 training <- data[inTrain,]
