@@ -212,6 +212,12 @@ randomRows = function(df,n){
 
 <p>Read in data, remove columns witch are mostly NA:s or empty and remove the index column.</p>
 
+<pre><code class="r">data=read.csv(&#39;pml-training.csv&#39;)
+no_na &lt;- as.vector(colSums(is.na(data) | data==&#39;&#39;)==0)
+data &lt;- data[,no_na]
+data &lt;- data[,-1]
+</code></pre>
+
 <p>I&#39;m removing the column with the name of the participant, even though the name is present in the test data, the participants name would have no meaning when predicting outcomes from other participants outside of this test.</p>
 
 <p>Also, all timestamps and window inforamtion is removed as I consider those data have no value here as the activities are not time dependent series.
@@ -221,9 +227,10 @@ head(data[,1:10])</p>
 data &lt;- data[,not_usefull]
 </code></pre>
 
-<p>Divide data into train and cross validation subsets. I sample 2000 rows to train with which would be enough to get the out of sample error to about 0.95. If I hade more time and computer power, I would have used the whole traing set:</p>
+<p>Divide data into train and cross validation subsets. I sample 4000 rows to train with which would be enough to get the out of sample accuracy to over 0.95. If I hade more time and computer power, I would have used the whole traing set:</p>
 
-<pre><code class="r">data &lt;- randomRows(data,2000)
+<pre><code class="r">set.seed(8423)
+data &lt;- randomRows(data,4000)
 inTrain &lt;- createDataPartition(y=data$classe, p=0.7, list=FALSE)
 training &lt;- data[inTrain,]
 CV &lt;- data[-inTrain,]
@@ -231,18 +238,17 @@ CV &lt;- data[-inTrain,]
 
 <p>For prediction I choose the random forrest method as it has preformed well in my earlier experiments with machine learning:</p>
 
-<pre><code class="r">set.seed(1000)
-modFit &lt;- train(classe ~ ., method=&quot;rf&quot;, data=training)
+<pre><code class="r">modFit &lt;- train(classe ~ ., method=&quot;rf&quot;, data=training)
 #modFit &lt;- train(classe ~ ., method=&quot;rf&quot;, prox=TRUE,importance=TRUE,do.trace=TRUE, data=training)
 </code></pre>
 
-<p>Calculate Out of sample error, using the cross validation set:</p>
+<p>Calculate Out of sample accuracy, using the cross validation set:</p>
 
 <pre><code class="r">answer &lt;- predict(modFit,CV)
 mean(answer==CV$classe)
 </code></pre>
 
-<pre><code>## [1] 0.9181
+<pre><code>## [1] 0.9633
 </code></pre>
 
 <p>Read in test data, format the data the same as the training data but also remove the problem_id column:</p>
@@ -260,7 +266,7 @@ test &lt;- test[-53]
 answers
 </code></pre>
 
-<pre><code>##  [1] C A A A A E D D A A B C B A E E A B A B
+<pre><code>##  [1] B A B A A E D D A A B C B A E E A D B B
 ## Levels: A B C D E
 </code></pre>
 

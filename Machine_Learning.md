@@ -32,6 +32,12 @@ randomRows = function(df,n){
 
 Read in data, remove columns witch are mostly NA:s or empty and remove the index column.
 
+```r
+data=read.csv('pml-training.csv')
+no_na <- as.vector(colSums(is.na(data) | data=='')==0)
+data <- data[,no_na]
+data <- data[,-1]
+```
 
 I'm removing the column with the name of the participant, even though the name is present in the test data, the participants name would have no meaning when predicting outcomes from other participants outside of this test.
 
@@ -42,10 +48,11 @@ head(data[,1:10])
 not_usefull <- c(-1,-2,-3,-4,-5,-6)
 data <- data[,not_usefull]
 ```
-Divide data into train and cross validation subsets. I sample 2000 rows to train with which would be enough to get the out of sample error to about 0.95. If I hade more time and computer power, I would have used the whole traing set:
+Divide data into train and cross validation subsets. I sample 4000 rows to train with which would be enough to get the out of sample accuracy to over 0.95. If I hade more time and computer power, I would have used the whole traing set:
 
 ```r
-data <- randomRows(data,2000)
+set.seed(8423)
+data <- randomRows(data,4000)
 inTrain <- createDataPartition(y=data$classe, p=0.7, list=FALSE)
 training <- data[inTrain,]
 CV <- data[-inTrain,]
@@ -54,12 +61,11 @@ CV <- data[-inTrain,]
 For prediction I choose the random forrest method as it has preformed well in my earlier experiments with machine learning:
 
 ```r
-set.seed(1000)
 modFit <- train(classe ~ ., method="rf", data=training)
 #modFit <- train(classe ~ ., method="rf", prox=TRUE,importance=TRUE,do.trace=TRUE, data=training)
 ```
 
-Calculate Out of sample error, using the cross validation set:
+Calculate Out of sample accuracy, using the cross validation set:
 
 ```r
 answer <- predict(modFit,CV)
@@ -67,7 +73,7 @@ mean(answer==CV$classe)
 ```
 
 ```
-## [1] 0.9181
+## [1] 0.9633
 ```
 
 Read in test data, format the data the same as the training data but also remove the problem_id column:
@@ -88,7 +94,7 @@ answers
 ```
 
 ```
-##  [1] C A A A A E D D A A B C B A E E A B A B
+##  [1] B A B A A E D D A A B C B A E E A D B B
 ## Levels: A B C D E
 ```
 
